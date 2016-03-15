@@ -11,6 +11,7 @@ from rps.report import ReportClient
 from rps.report import RepeatedIPEvent
 from rps.report import RepeatedIPv4Events
 
+
 # XXX These should be reformatted to proper unittests
 class TestReport(unittest.TestCase):
     def test_report(self):
@@ -30,12 +31,6 @@ class TestReport(unittest.TestCase):
         correct = ("02036466732a9a82d6512964f74bd9daeb01000ac000020203c00002030"
                    "1030006c0000204080302001120010db8001d00e402e018fffeab147f07"
                    "9c7dcb30a60592faa3a8")
-        # Check that our HMAC matches.
-        correct_hmac = correct[-20:]
-        report_hmac = hmac.new("foo", correct[:-20], hashlib.sha1).hexdigest()
-        print report_hmac
-        print correct_hmac
-        self.assertEqual(report_hmac, correct_hmac)
         hex_report = "".join("%.2x" % ord(c) for c in report)
         # Make the random bytes and timestamp the same.
         correct = correct[:10] + hex_report[10:34] + correct[34:]
