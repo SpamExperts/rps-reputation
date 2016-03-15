@@ -1,7 +1,5 @@
 """Test rps.report"""
 
-import hmac
-import hashlib
 import unittest
 
 from rps.report import IPEvent
