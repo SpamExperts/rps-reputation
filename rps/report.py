@@ -25,50 +25,9 @@ import SocketServer
 
 import ipaddr
 
+from . import core
+
 PORT = 6568
-VERSION = 2
-
-EVENTS = [
-    # Event type 0 is reserved. A sensor MUST NOT report events of type 0.
-    "RESERVED",
-    # An SMTP client at the specified IP address was greylisted.
-    "GREYLISTED",
-    # An SMTP client at the specified IP address was previously greylisted,
-    # but has now passed the greylisting test.
-    "UNGREYLISTED",
-    # An SMTP client at the specified IP address sent a message that was
-    # considered to be spam by automatic filtering software.
-    "AUTO-SPAM",
-    # An SMTP client at the specified IP address sent a message that was
-    # considered to be spam by a human being.
-    "HAND-SPAM",
-    # An SMTP client at the specified IP address sent a message that was
-    # considered to be non-spam by automatic filtering software.
-    "AUTO-HAM",
-    # An SMTP client at the specified IP address sent a message that was
-    # considered to be non-spam by a human being.
-    "HAND-HAM",
-    # An SMTP client at the specified IP address issued an SMTP RCPT command
-    # that specified a valid recipient address.
-    "VALID-RECIPIENT",
-    # An SMTP client at the specified IP address issued an SMTP RCPT command
-    # that specified an invalid recipient address.
-    "INVALID-RECIPIENT",
-    # An SMTP client at the specified IP address transmitted a message
-    # considered to be a virus by virus-scanning software.
-    "VIRUS",
-
-    # These are non-standard event types, in the "reserved for future use"
-    # space.  They may need to change in the future, if the specification
-    # adds new event types.
-
-    # An SMTP client at the specified IP address transmitted a message
-    # considered to be a phishing attempt by anti-phishing software.
-    "PHISH",
-    # An SMTP client at the specific IP address used SMTP AUTH with
-    # invalid credentials.
-    "AUTH-FAILED",
-]
 
 
 class ReportClient(object):
@@ -133,7 +92,7 @@ class ReportClient(object):
         # A username must range from 0 to 63 bytes in length.
         assert len(username) < 64
         random_bytes = [random.randint(0, 255) for dummy in xrange(8)]
-        header = struct.pack("!B%dp8BI" % (len(username) + 1), VERSION,
+        header = struct.pack("!B%dp8BI" % (len(username) + 1), core.VERSION,
                              username, random_bytes[0], random_bytes[1],
                              random_bytes[2], random_bytes[3],
                              random_bytes[4], random_bytes[5],
@@ -175,27 +134,6 @@ class ReportClient(object):
     def __del__(self):
         if self.events:
             self.send_report(force=True)
-
-
-def reportable_ip(address):
-    """A sensor must not report events for an IPv4 address that is not a
-    globally-routable unicast address. In particular, no IPv4 address
-    in the Private Address Space of [RFC1918] should appear in a
-    report, nor should any address in 127/8 nor 224/4.
-    """
-    assert not address.is_private
-    assert not address.is_loopback  # 127/8
-    assert not address.is_multicast  # 22/4
-    # A sensor must not report events for an IPv6 address that is not an
-    # Aggregatable Global Unicast Address as defined in [RFC4291].
-    assert not address.is_unspecified
-    try:
-        assert not address.is_site_local
-    except AttributeError:
-        # IPv4 Addresses do not have a "site local" attribute.
-        pass
-    assert not address.is_link_local
-    assert not address.is_reserved
 
 
 class RequestHandler(SocketServer.DatagramRequestHandler):
@@ -419,17 +357,17 @@ class IPEvent(object):
         self.address = ipaddr.IPAddress(address)
         self.event = event
         # Ensure that this IP is valid.
-        reportable_ip(self.address)
+        core.reportable_ip(self.address)
 
     def __str__(self):
         return "%s%s" % (self.address.packed,
-                         struct.pack("B", EVENTS.index(self.event)))
+                         struct.pack("B", core.EVENTS.index(self.event)))
 
     @classmethod
     def from_bytes(cls, bytestr):
         """Return an instance of this class with the data from the given
         byte string."""
-        event = EVENTS[struct.unpack("B", bytestr[-1])[0]]
+        event = core.EVENTS[struct.unpack("B", bytestr[-1])[0]]
         bytestr = bytestr[:-1]
         fmt = "!" + ("B" * len(bytestr))
         parts = enumerate(struct.unpack(fmt, bytestr)[::-1])
@@ -501,15 +439,15 @@ class RepeatedIPEvent(IPEvent):
 
     def __str__(self):
         return "%s%s" % (ipaddr.IPAddress(self.address).packed,
-                         struct.pack("BB", EVENTS.index(self.event),
+                         struct.pack("BB", core.EVENTS.index(self.event),
                                      self.repeat))
 
     @classmethod
     def from_bytes(cls, bytestr):
         """Return an instance of this class with the data from the given
         byte string."""
-        event = EVENTS[struct.unpack("B", bytestr[-1])[0]]
-        repeat = EVENTS[struct.unpack("B", bytestr[-2])[0]]
+        event = core.EVENTS[struct.unpack("B", bytestr[-1])[0]]
+        repeat = core.EVENTS[struct.unpack("B", bytestr[-2])[0]]
         bytestr = bytestr[:-2]
         fmt = "!" + ("B" * len(bytestr))
 
