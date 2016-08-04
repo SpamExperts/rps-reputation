@@ -17,13 +17,21 @@ import logging
 import hashlib
 import SocketServer
 
-import spoon
+try:
+    import spoon
+except ImportError:
+    _server_parent = SocketServer.UDPServer
+    _handler_parent = SocketServer.DatagramRequestHandler
+else:
+    _server_parent = spoon.server.UDPSpoon
+    _handler_parent = spoon.server.Gulp
+
 
 from .events import *
 from .reports import *
 
 
-class RequestHandler(spoon.server.Gulp):
+class RequestHandler(_handler_parent):
     """Handle a single request.
 
     It is expected that the handle_events() method will be overloaded by
@@ -183,9 +191,13 @@ class RequestHandler(spoon.server.Gulp):
         return software_name, software_version, end_user
 
 
-class ReportServer(spoon.server.TCPSpoon):
+class ReportServer(_server_parent):
     """A simple server that handles reports."""
     server_logger = "ip-reputation"
+    # handler_class is used for SocketServer, and handler_klass is used
+    # for spoon.server. For compatibility, it's easiest to just have
+    # them both defined.
+    handler_class = RequestHandler
     handler_klass = RequestHandler
 
     def __init__(self, address):
@@ -193,11 +205,6 @@ class ReportServer(spoon.server.TCPSpoon):
         self.recent_reports = set()
         self.report_count = 0
         SocketServer.UDPServer.__init__(self, address, self.handler_class)
-
-
-class ReportServerForked(ReportServer, spoon.server.TCPSpork):
-    """A pre-fork version of the report server."""
-    prefork = 6
 
 
 # A dynamic list of all the format types that we handle.
