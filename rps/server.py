@@ -17,11 +17,13 @@ import logging
 import hashlib
 import SocketServer
 
+import spoon
+
 from .events import *
 from .reports import *
 
 
-class RequestHandler(SocketServer.DatagramRequestHandler):
+class RequestHandler(spoon.server.Gulp):
     """Handle a single request.
 
     It is expected that the handle_events() method will be overloaded by
@@ -181,15 +183,21 @@ class RequestHandler(SocketServer.DatagramRequestHandler):
         return software_name, software_version, end_user
 
 
-class ReportServer(SocketServer.UDPServer):
+class ReportServer(spoon.server.TCPSpoon):
     """A simple server that handles reports."""
-    handler_class = RequestHandler
+    server_logger = "ip-reputation"
+    handler_klass = RequestHandler
 
     def __init__(self, address):
         logging.getLogger("ip-reputation").debug("Listening on %s", address)
         self.recent_reports = set()
         self.report_count = 0
         SocketServer.UDPServer.__init__(self, address, self.handler_class)
+
+
+class ReportServerForked(ReportServer, spoon.server.TCPSpork):
+    """A pre-fork version of the report server."""
+    prefork = 6
 
 
 # A dynamic list of all the format types that we handle.
