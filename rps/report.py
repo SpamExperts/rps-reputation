@@ -1,16 +1,17 @@
 #! /usr/bin/env python
 
-"""An implementation of the Roaring Penguin IP reputation reporting system.
+"""An implementation of the Roaring Penguin IP reputation reporting
+system.
 
 See http://www.roaringpenguin.com/draft-dskoll-reputation-reporting-02.html.
 
-There is currently no support for vendor-specific subreports or hierarchical
-aggregation.
+There is currently no support for vendor-specific subreports or
+hierarchical aggregation.
 
-In some places where the specification uses "SHOULD", this implementation
-treats the recommendation as "MUST".  For example, in the specification the
-software version SHOULD be an ASCII string, but in this implementation it
-MUST be an ASCII string.
+In some places where the specification uses "SHOULD", this
+implementation treats the recommendation as "MUST". For example, in the
+specification the software version SHOULD be an ASCII string, but in
+this implementation it MUST be an ASCII string.
 """
 
 import time
@@ -73,11 +74,12 @@ EVENTS = [
 class ReportClient(object):
     """Methods to generate and submit IP reputation reports.
 
-    Create an instance of the class with appropriate parameters.  Add events
-    to the events member, and call send_report() whenever you want to try
-    to send a report.  If there is not enough data to send, then the report
-    will not be sent.  If there is pending data when the instance is
-    garbage-collected, then a report will be sent at that time.
+    Create an instance of the class with appropriate parameters. Add
+    events to the events member, and call send_report() whenever you
+    want to try to send a report.  If there is not enough data to send,
+    then the report will not be sent.  If there is pending data when the
+    instance is garbage-collected, then a report will be sent at that
+    time.
     """
 
     def __init__(self, timeout, server, username, password, port=PORT,
@@ -107,10 +109,10 @@ class ReportClient(object):
               taking the low-order 32 bits of the result.
             * One or more subreports.
             * Finally, ten bytes consisting of the ten most-significant
-              bytes (in network byte order) of the SHA1 HMAC digest of all
-              data from the version number up to and including the EOR byte.
-              The password used to calculate the HMAC is a shared secret
-              known by the sensor.
+              bytes (in network byte order) of the SHA1 HMAC digest of
+              all data from the version number up to and including the
+              EOR byte. The password used to calculate the HMAC is a
+              shared secret known by the sensor.
 
         """
         # A sensor must not send an empty report.
@@ -154,11 +156,11 @@ class ReportClient(object):
         subreports.append(EndOfReport())
         report = self.generate_report(subreports, self.username,
                                       self.password)
-        # A sensor should include as many events in its report as necessary
-        # to make the report size at least 400 bytes. A sensor may send out
-        # a shorter report, but must not do so unless failing to do so would
-        # result in loss of data or unless it has not sent a report within
-        # the last hour.
+        # A sensor should include as many events in its report as
+        # necessary to make the report size at least 400 bytes. A sensor
+        # may send out a shorter report, but must not do so unless
+        # failing to do so would result in loss of data or unless it has
+        # not sent a report within the last hour.
         if not force and len(report) < 400:
             return
         try:
@@ -240,9 +242,9 @@ class RequestHandler(SocketServer.DatagramRequestHandler):
         if version != "\x02":
             log.error("Unknown version: %s", version)
             return
-        # The aggregator must look up the secret based on the user name in
-        # the report. An aggregator must reject a report that fails to
-        # validate. It should log information about invalid reports.
+        # The aggregator must look up the secret based on the user name
+        # in the report. An aggregator must reject a report that fails
+        # to validate. It should log information about invalid reports.
         password = self.get_password(username)
         if not password:
             log.debug("No password found.")
@@ -258,14 +260,15 @@ class RequestHandler(SocketServer.DatagramRequestHandler):
         if not subreports:
             log.info("Empty report from %s.", self.client_address[0])
             return
-        # An aggregator should not accept a report whose timestamp is more
-        # than two minutes away from the current time.
+        # An aggregator should not accept a report whose timestamp is
+        # more than two minutes away from the current time.
         timestamp = struct.unpack("!I", timestamp)[0]
         if time.time() - timestamp > 120:
             log.info("Report too old: %s vs. %s", time.time(), timestamp)
             return
-        # An aggregator should use the time stamp and random-number fields
-        # to detect duplicate reports and fend off replay attacks.
+        # An aggregator should use the time stamp and random-number
+        # fields to detect duplicate reports and fend off replay
+        # attacks.
         if (timestamp, random8) in self.server.recent_reports:
             log.info("Replayed report: %s/%s", timestamp, random8)
             return
@@ -315,10 +318,12 @@ class RequestHandler(SocketServer.DatagramRequestHandler):
             subreports = subreports[3:]
         except struct.error as e:
             log.info("Unable to unpack %r: %s", subreports, e)
-            # Give up on this report, because we don't know how to continue.
+            # Give up on this report, because we don't know how to
+            # continue.
             return software_name, software_version, end_user
-        # An aggregator must skip over subreports with format values it does
-        # not understand. (It can do this by skipping ahead length bytes.)
+        # An aggregator must skip over subreports with format values it
+        # does not understand. (It can do this by skipping ahead length
+        # bytes.)
         try:
             report_class = FORMATS[fmt]
         except KeyError:
@@ -329,8 +334,8 @@ class RequestHandler(SocketServer.DatagramRequestHandler):
             return self.process_subreports(subreports[length:], events,
                                            software_name, software_version,
                                            end_user)
-        # An aggregator must ignore the entire report if any subreports have
-        # invalid lengths.
+        # An aggregator must ignore the entire report if any subreports
+        # have invalid lengths.
         if report_class in (IPv4Events, RepeatedIPv4Events, IPv6Events,
                             RepeatedIPv6Events):
             assert length % report_class.length == 0
@@ -368,9 +373,9 @@ class ReportServer(SocketServer.UDPServer):
 class SubReport(object):
     """An abstract base class for the various subreport types.
 
-    A subreport consists of either the single byte 0, indicating the end of
-    the subreports, or a three-byte preamble followed by the subreport
-    contents. The three-byte preamble consists of:
+    A subreport consists of either the single byte 0, indicating the end
+    of the subreports, or a three-byte preamble followed by the
+    subreport contents. The three-byte preamble consists of:
 
         * One format byte.
         * A two-byte length field. This is a 16-bit unsigned integer in
@@ -392,8 +397,8 @@ class SubReport(object):
 
 
 class EndOfReport(SubReport):
-    """This signifies the end of the subreports in the report. It must not
-    be followed by a length field."""
+    """This signifies the end of the subreports in the report. It must
+    not be followed by a length field."""
     format = 0
 
     def __str__(self):
@@ -542,8 +547,8 @@ class RepeatedIPv4Events(RepeatedEvents):
     """A subreport regarding multiple occurrences of events regarding an
     IPv4 address.
 
-    Each repeated IPv4 subreport contains one or more events. The length of
-    each event is 6. The events themselves consist of:
+    Each repeated IPv4 subreport contains one or more events. The length
+    of each event is 6. The events themselves consist of:
 
         * The 4-byte IPv4 address in network byte order.
         * A one-byte event type.
@@ -557,13 +562,13 @@ class RepeatedIPv6Events(RepeatedEvents):
     """A subreport regarding multiple occurrences of events regarding an
     IPv6 address.
 
-    Each repeated IPv6 subreport contains one or more events. The length of
-    each event is 18. The events themselves consist of:
+    Each repeated IPv6 subreport contains one or more events. The length
+    of each event is 18. The events themselves consist of:
 
         * The 16-byte IPv6 address in network byte order.
         * A one-byte event type.
-        * A one-byte repeat. This byte is interpreted as an unsigned number.
-          It must be greater than or equal to two.
+        * A one-byte repeat. This byte is interpreted as an unsigned
+          number. It must be greater than or equal to two.
     """
     format = 4
     repeat = 18
@@ -595,8 +600,9 @@ class StringReport(SubReport):
 class SoftwareName(StringReport):
     """The name of the software doing the report.
 
-    The length can range from 1 to 63. The contents must be a valid UTF-8
-    string specifying the name of the software running on the aggregator.
+    The length can range from 1 to 63. The contents must be a valid
+    UTF-8 string specifying the name of the software running on the
+    aggregator.
     """
     format = 6
     maximum_length = 64
@@ -606,8 +612,9 @@ class SoftwareName(StringReport):
 class SoftwareVersion(StringReport):
     """A string version number of the software doing the report.
 
-    The length can range from 1 to 31. The contents must be a valid US-ASCII
-    string specifying the version of the software running on the aggregator.
+    The length can range from 1 to 31. The contents must be a valid
+    US-ASCII string specifying the version of the software running on
+    the aggregator.
     """
     format = 7
     maximum_length = 32
@@ -618,12 +625,13 @@ class EndUser(StringReport):
     """A method of identifying the user reporting the events.
 
     This report, if present, provides additional information about the
-    specific user who generated subsequent subreports. For example, if an
-    ISP is reporting events, the end user subreport may contain enough
-    information for the ISP to determine which of its subscribers reported
-    the events. The contents of the end user subreport are a sequence of
-    bytes ranging in length from 1 to 31 bytes. The contents are opaque and
-    have meaning only to the organization running the sensor.
+    specific user who generated subsequent subreports. For example, if
+    an ISP is reporting events, the end user subreport may contain
+    enough information for the ISP to determine which of its subscribers
+    reported the events. The contents of the end user subreport are a
+    sequence of bytes ranging in length from 1 to 31 bytes. The contents
+    are opaque and have meaning only to the organization running the
+    sensor.
     """
     format = 8
     maximum_length = 32
