@@ -185,5 +185,3 @@ class RepeatedIPv6Events(RepeatedEvents):
     """
     format = 4
     repeat = 18
-
-
