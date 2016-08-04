@@ -1,3 +1,7 @@
+"""Common information for the IP reputation system."""
+
+# This is the protocol version, not the package version, which is in
+# __init__.py.
 VERSION = 2
 
 PORT = 6568
