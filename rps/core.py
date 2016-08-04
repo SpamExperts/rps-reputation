@@ -1,5 +1,7 @@
 VERSION = 2
 
+PORT = 6568
+
 EVENTS = [
     # Event type 0 is reserved. A sensor MUST NOT report events of type
     # 0.
