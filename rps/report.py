@@ -26,6 +26,7 @@ import ipaddr
 
 try:
     import spoon
+    import spoon.server
 except ImportError:
     _server_parent = SocketServer.UDPServer
     _handler_parent = SocketServer.DatagramRequestHandler
@@ -375,7 +376,7 @@ class ReportServer(_server_parent):
         logging.getLogger("ip-reputation").debug("Listening on %s", address)
         self.recent_reports = set()
         self.report_count = 0
-        SocketServer.UDPServer.__init__(self, address, self.handler_class)
+        super(ReportServer, self).__init__(address)
 
 
 class SubReport(object):
