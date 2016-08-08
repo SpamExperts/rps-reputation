@@ -32,7 +32,7 @@ except ImportError:
     _handler_parent = SocketServer.DatagramRequestHandler
 else:
     _server_parent = spoon.server.UDPSpoon
-    _handler_parent = spoon.server.Gulp
+    _handler_parent = spoon.server.UDPGulp
 
 PORT = 6568
 VERSION = 2
