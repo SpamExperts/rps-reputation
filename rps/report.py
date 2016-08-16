@@ -24,6 +24,16 @@ import SocketServer
 
 import ipaddr
 
+try:
+    import spoon
+    import spoon.server
+except ImportError:
+    _server_parent = SocketServer.UDPServer
+    _handler_parent = SocketServer.DatagramRequestHandler
+else:
+    _server_parent = spoon.server.UDPSpoon
+    _handler_parent = spoon.server.UDPGulp
+
 PORT = 6568
 VERSION = 2
 
@@ -196,7 +206,7 @@ def reportable_ip(address):
     assert not address.is_reserved
 
 
-class RequestHandler(SocketServer.DatagramRequestHandler):
+class RequestHandler(_handler_parent):
     """Handle a single request.
 
     It is expected that the handle_events() method will be overloaded by
@@ -354,15 +364,19 @@ class RequestHandler(SocketServer.DatagramRequestHandler):
         return software_name, software_version, end_user
 
 
-class ReportServer(SocketServer.UDPServer):
+class ReportServer(_server_parent):
     """A simple server that handles reports."""
+    # handler_class is used for SocketServer, and handler_klass is used
+    # for spoon.server. For compatibility, it's easiest to just have
+    # them both defined.
     handler_class = RequestHandler
+    handler_klass = RequestHandler
 
     def __init__(self, address):
         logging.getLogger("ip-reputation").debug("Listening on %s", address)
         self.recent_reports = set()
         self.report_count = 0
-        SocketServer.UDPServer.__init__(self, address, self.handler_class)
+        super(ReportServer, self).__init__(address)
 
 
 class SubReport(object):
