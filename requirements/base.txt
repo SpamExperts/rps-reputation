@@ -1,2 +1,2 @@
 ipaddr==2.1.11
-spoon==1.0.4
+spoon==1.0.5
