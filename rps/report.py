@@ -147,7 +147,7 @@ class ReportClient(object):
         username = username.encode("utf8")
         # A username must range from 0 to 63 bytes in length.
         assert len(username) < 64
-        random_bytes = [random.randint(0, 255) for dummy in xrange(8)]
+        random_bytes = [random.randint(0, 255) for dummy in range(8)]
         header = struct.pack("!B%dp8BI" % (len(username) + 1), VERSION,
                              username, random_bytes[0], random_bytes[1],
                              random_bytes[2], random_bytes[3],
