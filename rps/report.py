@@ -451,8 +451,8 @@ class IPEvent(object):
                          struct.pack("B", EVENTS.index(self.event)))
 
     def __bytes__(self):
-        return "%s%s" % (self.address.packed,
-                         struct.pack("B", EVENTS.index(self.event)))
+        return b"%s%s" % (self.address.packed,
+                          struct.pack("B", EVENTS.index(self.event)))
 
     @classmethod
     def from_bytes(cls, bytestr):
@@ -486,9 +486,9 @@ class IPEvents(SubReport):
                          "".join(str(event) for event in self.events))
 
     def __bytes__(self):
-        return "%s%s" % (struct.pack("!BH", self.format,
-                                     self.length * len(self.events)),
-                         "".join(str(event) for event in self.events))
+        return b"%s%s" % (struct.pack("!BH", self.format,
+                                      self.length * len(self.events)),
+                          b"".join(bytes(event) for event in self.events))
 
     @classmethod
     def from_bytes(cls, bytestr):
@@ -550,9 +550,9 @@ class RepeatedIPEvent(IPEvent):
             address = ipaddress.ip_address(self.address)
         else:
             address = ipaddr.IPAddress(self.address)
-        return "%s%s" % (address.packed,
-                         struct.pack("BB", EVENTS.index(self.event),
-                                     self.repeat))
+        return b"%s%s" % (address.packed,
+                          struct.pack("BB", EVENTS.index(self.event),
+                                      self.repeat))
 
     @classmethod
     def from_bytes(cls, bytestr):
@@ -586,9 +586,9 @@ class RepeatedEvents(SubReport):
                          "".join(str(event) for event in self.events))
 
     def __bytes__(self):
-        return "%s%s" % (struct.pack("!BH", self.format,
-                                     self.length * len(self.events)),
-                         "".join(str(event) for event in self.events))
+        return b"%s%s" % (struct.pack("!BH", self.format,
+                                      self.length * len(self.events)),
+                          b"".join(bytes(event) for event in self.events))
 
     @classmethod
     def from_bytes(cls, bytestr):
