@@ -5,7 +5,7 @@ An implementation of the Roaring Penguin IP reputation reporting system.
 
 
 .. image:: https://coveralls.io/repos/github/SpamExperts/rps-reputation/badge.svg?branch=requires-io-master
-:target: https://coveralls.io/github/SpamExperts/rps-reputation?branch=requires-io-master
+  :target: https://coveralls.io/github/SpamExperts/rps-reputation?branch=requires-io-master
 
 
 .. image:: https://codeclimate.com/github/SpamExperts/rps-reputation/badges/gpa.svg
