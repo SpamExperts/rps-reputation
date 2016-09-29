@@ -155,7 +155,7 @@ class ReportClient(object):
                              random_bytes[6], random_bytes[7],
                              int(time.time()))
         subreports = b"".join(bytes(subreport) for subreport in subreports)
-        footer = hmac.new(password, header + subreports,
+        footer = hmac.new(bytes(password, "ascii"), header + subreports,
                           hashlib.sha1).digest()[:10]
         return header + subreports + footer
 
