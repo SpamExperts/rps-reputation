@@ -20,7 +20,10 @@ import random
 import socket
 import hashlib
 import logging
-import SocketServer
+try:
+    import socketserver
+except ImportError:
+    import SocketServer as socketserver
 
 try:
     import ipaddress
@@ -32,8 +35,8 @@ try:
     import spoon
     import spoon.server
 except ImportError:
-    _server_parent = SocketServer.UDPServer
-    _handler_parent = SocketServer.DatagramRequestHandler
+    _server_parent = socketserver.UDPServer
+    _handler_parent = socketserver.DatagramRequestHandler
 else:
     _server_parent = spoon.server.UDPSpoon
     _handler_parent = spoon.server.UDPGulp
