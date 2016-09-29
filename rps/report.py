@@ -154,7 +154,7 @@ class ReportClient(object):
                              random_bytes[4], random_bytes[5],
                              random_bytes[6], random_bytes[7],
                              int(time.time()))
-        subreports = "".join(str(subreport) for subreport in subreports)
+        subreports = b"".join(bytes(subreport) for subreport in subreports)
         footer = hmac.new(password, header + subreports,
                           hashlib.sha1).digest()[:10]
         return header + subreports + footer
@@ -405,6 +405,9 @@ class SubReport(object):
     def __str__(self):
         return struct.pack("!BH", self.format, self.length)
 
+    def __bytes__(self):
+        return struct.pack("!BH", self.format, self.length)
+
     @classmethod
     def from_bytes(cls, bytestr):
         """Return an instance of this class with the data from the given
@@ -418,6 +421,9 @@ class EndOfReport(SubReport):
     format = 0
 
     def __str__(self):
+        return struct.pack("B", 0)
+
+    def __bytes__(self):
         return struct.pack("B", 0)
 
     @classmethod
@@ -441,6 +447,10 @@ class IPEvent(object):
         reportable_ip(self.address)
 
     def __str__(self):
+        return "%s%s" % (self.address.packed,
+                         struct.pack("B", EVENTS.index(self.event)))
+
+    def __bytes__(self):
         return "%s%s" % (self.address.packed,
                          struct.pack("B", EVENTS.index(self.event)))
 
@@ -471,6 +481,11 @@ class IPEvents(SubReport):
         self.events = events
 
     def __str__(self):
+        return "%s%s" % (struct.pack("!BH", self.format,
+                                     self.length * len(self.events)),
+                         "".join(str(event) for event in self.events))
+
+    def __bytes__(self):
         return "%s%s" % (struct.pack("!BH", self.format,
                                      self.length * len(self.events)),
                          "".join(str(event) for event in self.events))
@@ -530,6 +545,15 @@ class RepeatedIPEvent(IPEvent):
                          struct.pack("BB", EVENTS.index(self.event),
                                      self.repeat))
 
+    def __bytes__(self):
+        if ipaddress:
+            address = ipaddress.ip_address(self.address)
+        else:
+            address = ipaddr.IPAddress(self.address)
+        return "%s%s" % (address.packed,
+                         struct.pack("BB", EVENTS.index(self.event),
+                                     self.repeat))
+
     @classmethod
     def from_bytes(cls, bytestr):
         """Return an instance of this class with the data from the given
@@ -557,6 +581,11 @@ class RepeatedEvents(SubReport):
         self.events = events
 
     def __str__(self):
+        return "%s%s" % (struct.pack("!BH", self.format,
+                                     self.length * len(self.events)),
+                         "".join(str(event) for event in self.events))
+
+    def __bytes__(self):
         return "%s%s" % (struct.pack("!BH", self.format,
                                      self.length * len(self.events)),
                          "".join(str(event) for event in self.events))
@@ -617,6 +646,9 @@ class StringReport(SubReport):
         self.value = value
 
     def __str__(self):
+        return struct.pack("!Bp", self.format, self.value)
+
+    def __bytes__(self):
         return struct.pack("!Bp", self.format, self.value)
 
     @classmethod
