@@ -42,7 +42,11 @@ class TestReport(unittest.TestCase):
         correct = ("0203646673010101010101010144f2444801000a054f49cc030"
                    "54f4147010300065db8d8220803020011260628000220000102"
                    "48189325c81946070c90ebfd8d9da4a67577")
-        hex_report = "".join("%.2x" % ord(c) for c in report)
+        try:
+            hex_report = "".join("%.2x" % ord(c) for c in report)
+        except TypeError:
+            # Python 3.
+            hex_report = "".join("%.2x" % c for c in report)
         # XXX Why are we printing things in a unit test?
         print(hex_report[:-20])
         print(correct[:-20])
