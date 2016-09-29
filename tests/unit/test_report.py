@@ -1,5 +1,7 @@
 """Test rps.report"""
 
+from __future__ import print_function
+
 import unittest
 
 from rps.report import IPEvent
@@ -32,6 +34,7 @@ class TestReport(unittest.TestCase):
         hex_report = "".join("%.2x" % ord(c) for c in report)
         # Make the random bytes and timestamp the same.
         correct = correct[:10] + hex_report[10:34] + correct[34:]
-        print hex_report[:-20]
-        print correct[:-20]
+        # XXX Why are we printing things in a unit test?
+        print(hex_report[:-20])
+        print(correct[:-20])
         self.assertEqual(hex_report[:-20], correct[:-20])
