@@ -22,7 +22,11 @@ import hashlib
 import logging
 import SocketServer
 
-import ipaddr
+try:
+    import ipaddress
+except ImportError:
+    ipaddress = None
+    import ipaddr
 
 try:
     import spoon
@@ -425,7 +429,10 @@ class IPEvent(object):
     """To be included in an IPEvents subreport."""
 
     def __init__(self, address, event):
-        self.address = ipaddr.IPAddress(address)
+        if ipaddress:
+            self.address = ipaddress.ip_address(address)
+        else:
+            self.address = ipaddr.IPAddress(address)
         self.event = event
         # Ensure that this IP is valid.
         reportable_ip(self.address)
@@ -442,8 +449,11 @@ class IPEvent(object):
         bytestr = bytestr[:-1]
         fmt = "!" + ("B" * len(bytestr))
         parts = enumerate(struct.unpack(fmt, bytestr)[::-1])
-        address = ipaddr.IPAddress(sum((part * (2 ** (8 * byte)))
-                                       for byte, part in parts))
+        address = sum((part * (2 ** (8 * byte))) for byte, part in parts)
+        if ipaddress:
+            address = ipaddress.ip_address(address)
+        else:
+            address = ipaddr.IPAddress(address)
         return cls(address, event)
 
 
@@ -509,7 +519,11 @@ class RepeatedIPEvent(IPEvent):
         self.repeat = repeat
 
     def __str__(self):
-        return "%s%s" % (ipaddr.IPAddress(self.address).packed,
+        if ipaddress:
+            address = ipaddress.ip_address(self.address)
+        else:
+            address = ipaddr.IPAddress(self.address)
+        return "%s%s" % (address.packed,
                          struct.pack("BB", EVENTS.index(self.event),
                                      self.repeat))
 
@@ -523,8 +537,11 @@ class RepeatedIPEvent(IPEvent):
         fmt = "!" + ("B" * len(bytestr))
 
         parts = enumerate(struct.unpack(fmt, bytestr)[::-1])
-        address = ipaddr.IPAddress(sum((part * (2 ** (8 * byte)))
-                                       for byte, part in parts))
+        address = sum((part * (2 ** (8 * byte))) for byte, part in parts)
+        if ipaddress:
+            address = ipaddress.ip_address(address)
+        else:
+            address = ipaddr.IPAddress(address)
         return cls(address, event, repeat)
 
 
