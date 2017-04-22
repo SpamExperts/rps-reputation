@@ -514,7 +514,12 @@ class IPEvents(SubReport):
         result = cls([])
         while bytestr:
             event_bytes, bytestr = bytestr[:cls.length], bytestr[cls.length:]
-            result.events.append(IPEvent.from_bytes(event_bytes))
+            try:
+                result.events.append(IPEvent.from_bytes(event_bytes))
+            except AssertionError:
+                # This IP should not be reported, so just ignore it.
+                log = logging.getLogger("ip-reputation")
+                log.info("Ignoring unreportable IP: %r", event_bytes)
         return result
 
 
