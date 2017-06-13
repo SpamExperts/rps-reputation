@@ -31,7 +31,7 @@ class TestReport(unittest.TestCase):
         # The report is from the user "dfs" with password "foo".
         subreports = [
             IPv4Events([IPEvent("5.79.73.204", "AUTO-SPAM"),
-                        IPEvent("5.79.65.71", "GREYLISTED")]),
+                        IPEvent("95.211.160.147", "GREYLISTED")]),
             RepeatedIPv4Events([
                 RepeatedIPEvent("93.184.216.34", "INVALID-RECIPIENT", 3)]),
             IPv6Events([
