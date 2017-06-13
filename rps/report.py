@@ -270,7 +270,7 @@ class RequestHandler(_handler_parent):
             return
         correct_digest = hmac.new(password, signature_text, hashlib.sha1)
         if correct_digest.digest()[:10] != footer:
-            self.server.log.warn(
+            self.server.log.info(
                 "Failed password check: %s [%s] (%r != %r).",
                 username, self.client_address[0],
                 correct_digest.digest()[:10], footer
