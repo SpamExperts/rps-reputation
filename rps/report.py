@@ -318,7 +318,7 @@ class RequestHandler(_handler_parent):
              end_user) = self.process_subreports(subreports, events)
         except AssertionError as e:
             # The entire report needs to be ignored.
-            self.server.log.warn(
+            self.server.log.info(
                 "Could not process report: %s", e,
                 extra={
                     "data": {
