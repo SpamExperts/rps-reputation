@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.5
+-----
+
+ * Depedency version increases.
+
 1.0.4
 -----
 
