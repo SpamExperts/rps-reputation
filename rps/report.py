@@ -368,6 +368,8 @@ class RequestHandler(_handler_parent):
         if report_class in (IPv4Events, RepeatedIPv4Events, IPv6Events,
                             RepeatedIPv6Events):
             assert length % report_class.length == 0
+        elif report_class in (StringReport, SoftwareName, SoftwareVersion, EndUser):
+            assert length < report_class.maximum_length
         else:
             assert length == report_class.length
         bytestr, subreports = subreports[:length], subreports[length:]
@@ -666,18 +668,19 @@ class StringReport(SubReport):
             value = value.encode(self.encoding)
         assert len(value) < self.maximum_length
         self.value = value
+        self.length = len(self.value)
 
     def __str__(self):
-        return struct.pack("!Bp", self.format, self.value)
+        return struct.pack("!BH%ss" % self.length, self.format, self.length, self.value)
 
     def __bytes__(self):
-        return struct.pack("!Bp", self.format, self.value)
+        return struct.pack("!BH%ss" % self.length, self.format, self.length, self.value)
 
     @classmethod
     def from_bytes(cls, bytestr):
         """Return an instance of this class with the data from the given
         byte string."""
-        return cls(struct.unpack("%ss" % len(bytestr), bytes)[0])
+        return cls(struct.unpack("%ss" % len(bytestr), bytestr)[0])
 
 
 class SoftwareName(StringReport):
