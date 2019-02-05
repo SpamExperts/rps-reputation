@@ -1,6 +1,11 @@
 Changelog
 =========
 
+1.0.6
+-----
+
+ * Fix handling the "enduser" field and other "stringreport" fields.
+
 1.0.5
 -----
 
