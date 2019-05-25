@@ -270,7 +270,7 @@ class RequestHandler(_handler_parent):
             return
         correct_digest = hmac.new(password, signature_text, hashlib.sha1)
         if correct_digest.digest()[:10] != footer:
-            self.server.log.warn(
+            self.server.log.info(
                 "Failed password check: %s [%s] (%r != %r).",
                 username, self.client_address[0],
                 correct_digest.digest()[:10], footer
@@ -318,7 +318,7 @@ class RequestHandler(_handler_parent):
              end_user) = self.process_subreports(subreports, events)
         except AssertionError as e:
             # The entire report needs to be ignored.
-            self.server.log.warn(
+            self.server.log.info(
                 "Could not process report: %s", e,
                 extra={
                     "data": {
@@ -368,6 +368,8 @@ class RequestHandler(_handler_parent):
         if report_class in (IPv4Events, RepeatedIPv4Events, IPv6Events,
                             RepeatedIPv6Events):
             assert length % report_class.length == 0
+        elif report_class in (StringReport, SoftwareName, SoftwareVersion, EndUser):
+            assert length < report_class.maximum_length
         else:
             assert length == report_class.length
         bytestr, subreports = subreports[:length], subreports[length:]
@@ -514,7 +516,12 @@ class IPEvents(SubReport):
         result = cls([])
         while bytestr:
             event_bytes, bytestr = bytestr[:cls.length], bytestr[cls.length:]
-            result.events.append(IPEvent.from_bytes(event_bytes))
+            try:
+                result.events.append(IPEvent.from_bytes(event_bytes))
+            except AssertionError:
+                # This IP should not be reported, so just ignore it.
+                log = logging.getLogger("ip-reputation")
+                log.info("Ignoring unreportable IP: %r", event_bytes)
         return result
 
 
@@ -661,18 +668,19 @@ class StringReport(SubReport):
             value = value.encode(self.encoding)
         assert len(value) < self.maximum_length
         self.value = value
+        self.length = len(self.value)
 
     def __str__(self):
-        return struct.pack("!Bp", self.format, self.value)
+        return struct.pack("!BH%ss" % self.length, self.format, self.length, self.value)
 
     def __bytes__(self):
-        return struct.pack("!Bp", self.format, self.value)
+        return struct.pack("!BH%ss" % self.length, self.format, self.length, self.value)
 
     @classmethod
     def from_bytes(cls, bytestr):
         """Return an instance of this class with the data from the given
         byte string."""
-        return cls(struct.unpack("%ss" % len(bytestr), bytes)[0])
+        return cls(struct.unpack("%ss" % len(bytestr), bytestr)[0])
 
 
 class SoftwareName(StringReport):
