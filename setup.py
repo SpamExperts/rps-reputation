@@ -2,8 +2,12 @@
 
 from __future__ import absolute_import
 
-import rps
+import yaml
 import distutils.core
+
+
+with open('manifest.yml', 'r') as f:
+    version = yaml.safe_load(f).get('version')
 
 REQUIRES = ["ipaddr"]
 DESCRIPTION = """An implementation of the Roaring Penguin IP reputation
@@ -23,7 +27,7 @@ distutils.core.setup(
     name='rps-reputation',
     description=DESCRIPTION,
     author="SpamExperts",
-    version=rps.__version__,
+    version=version,
     license='GPL',
     platforms='POSIX',
     keywords='spam',
