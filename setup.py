@@ -2,12 +2,9 @@
 
 from __future__ import absolute_import
 
-import yaml
-import distutils.core
+import rps
+from setuptools import setup
 
-
-with open('manifest.yml', 'r') as f:
-    version = yaml.safe_load(f).get('version')
 
 REQUIRES = ["ipaddr"]
 DESCRIPTION = """An implementation of the Roaring Penguin IP reputation
@@ -23,11 +20,11 @@ CLASSIFIERS = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
 ]
 
-distutils.core.setup(
+setup(
     name='rps-reputation',
     description=DESCRIPTION,
     author="SpamExperts",
-    version=version,
+    version=rps.__version__,
     license='GPL',
     platforms='POSIX',
     keywords='spam',
