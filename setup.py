@@ -3,7 +3,8 @@
 from __future__ import absolute_import
 
 import rps
-import distutils.core
+from setuptools import setup
+
 
 REQUIRES = ["ipaddr"]
 DESCRIPTION = """An implementation of the Roaring Penguin IP reputation
@@ -19,7 +20,7 @@ CLASSIFIERS = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
 ]
 
-distutils.core.setup(
+setup(
     name='rps-reputation',
     description=DESCRIPTION,
     author="SpamExperts",

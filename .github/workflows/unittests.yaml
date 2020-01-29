@@ -1,0 +1,23 @@
+name: unittests
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  push:
+    name: Push Container
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@master
+        with:
+          fetch-depth: '0'
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+         python-version: 3.7
+      - name: Run tests
+        run: >-
+         pip3 install -r requirements/tests.txt && pytest tests/unit
