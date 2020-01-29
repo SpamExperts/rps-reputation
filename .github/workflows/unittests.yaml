@@ -18,6 +18,12 @@ jobs:
         uses: actions/setup-python@v1
         with:
          python-version: 3.7
+      - run: mkdir artifact
       - name: Run tests
         run: >-
-         pip3 install -r requirements/tests.txt && pytest tests/unit
+         pip3 install -r requirements/tests.txt && pytest tests/unit --junitxml=artifact/unittest.results.xml
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: unittest_results
+          path: artifact
