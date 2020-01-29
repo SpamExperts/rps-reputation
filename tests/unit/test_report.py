@@ -15,7 +15,6 @@ from rps.report import RepeatedIPv4Events
 
 
 # XXX These should be reformatted to proper unittests
-@unittest.skip
 class TestReport(unittest.TestCase):
     def setUp(self):
         """Prepare for a single test."""
