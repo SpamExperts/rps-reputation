@@ -1,3 +1,13 @@
+# 1.0.7 - 4-2-2020
+
+## Unclassified Changes
+
+- Updated workflow to upload to PyPI
+- unskip test
+- save unittest errors in artifact
+- skip failing unittests
+- increase version
+
 Changelog
 =========
 
