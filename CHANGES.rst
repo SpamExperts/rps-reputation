@@ -1,3 +1,10 @@
+# 1.0.8 - 4-8-2020
+
+## Unclassified Changes
+
+- Merge pull request [#44](44) from SpamExperts/MMA-4068
+- MMA-4068. Include manifest.yml file into the installation directory
+
 # 1.0.7 - 4-2-2020
 
 ## Unclassified Changes
