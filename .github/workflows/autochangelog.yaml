@@ -20,7 +20,7 @@ jobs:
         uses: rubenfiszel/autochangelog-action@v0.13.0
         with:
           changelog_file: './CHANGES.rst'
-          manifest_file: './manifest.yml'
+          manifest_file: './rps/manifest.yml'
           dry_run: false
           tag_prefix: 'v'
       - name: Create Pull Request

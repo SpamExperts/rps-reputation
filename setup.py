@@ -34,4 +34,5 @@ setup(
     packages=[
         'rps',
     ],
+    package_data={'rps': ['manifest.yml']},
 )
